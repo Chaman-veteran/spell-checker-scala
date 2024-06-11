@@ -7,3 +7,8 @@
 *.metals
 *.bsp
 *.vscode
+*.bloop
+
+# sbt's project build
+project/
+target/
