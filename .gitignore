@@ -1,0 +1,9 @@
+# scala builds
+*.tasty
+*.class
+
+# code/codium's metal extension
+*.scala-build
+*.metals
+*.bsp
+*.vscode
