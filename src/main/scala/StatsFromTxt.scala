@@ -1,8 +1,12 @@
 package StatsFromTxt
 
+import com.fasterxml.jackson.module.scala.{ClassTagExtensions, DefaultScalaModule}
+import com.fasterxml.jackson.databind.json.JsonMapper
 import java.nio.file.{Files, Paths, Path}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{Map}
+
+val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
 
 def insertDown[T](elem : (Int, T), list : List[(Int, T)])
                         : List[(Int, T)] =
@@ -70,5 +74,22 @@ class Dictionary(var language : String):
     */
   def getResultingMap() : Map[K, (Int, List[String])] = 
     map.map((k, v) => (k, (v._1, v._2.take(3).map((_, s) => s))))
+
+  /**
+    * Fetch statistics as a Map object
+    *
+    * @return
+    */
+  def getStatsFromFile() : Map[K, (Int, List[String])] =
+    this.getFreqnNext(this.getFiles())
+    this.getResultingMap()
+  
+  /**
+    * Serialize the map associating words to their properties in a file
+    */
+  def serializeMap() : Unit = 
+    val computedMap = this.getStatsFromFile()
+    val resultFile = Paths.get("SerializedStatistics/result").toFile()
+    mapper.writeValue(resultFile, computedMap)
 
 end Dictionary
