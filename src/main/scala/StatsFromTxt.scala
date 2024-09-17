@@ -42,9 +42,11 @@ class Dictionary(var language : String):
     val new_value   = addValue(w, prev_value)
     map.update(k, new_value)
 
-  def getFreqnNext(wordList : List[String]) =
+  def getFreqnNext(wordList : List[String]) : Unit =
     wordList match
       case Nil => ()
-      case w :: ws => this.insertWithAddValue(w, fromOption(ws.headOption, ""))
+      case w :: ws =>
+        this.insertWithAddValue(w, fromOption(ws.headOption, ""))
+        this.getFreqnNext(ws)
 
 end Dictionary
