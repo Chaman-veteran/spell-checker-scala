@@ -10,17 +10,26 @@ def insertDown[T](elem : (Int, T), list : List[(Int, T)])
     else insertDown(elem, list.tail)
     list
 
+def fromOption[B](opt : Option[B], b : B): B = opt match
+  case None => b
+  case Some(ob) => ob
+
+/**
+  * Merge two same words by suming the frequencies and following words 
+  * to the ones already recorded 
+  *
+  * @param newWord
+  * @param recordedWords
+  * @return
+  */
 def addValue(newWord : String,
             recordedWords : (Int, List[(Int, String)]))
             : (Int, List[(Int, String)]) =
   val nbSeen = 1 + (recordedWords(1).find((_, word) => word == newWord) match
                       case None => 0
                       case Some((encountered, _)) => encountered)
+  //^^^ nbSeen is the number of occurences of nextWord following the current word
   (recordedWords(0) + 1, insertDown((nbSeen, newWord), recordedWords(1)))
-
-def fromOption[B](opt : Option[B], b : B): B = opt match
-  case None => b
-  case Some(ob) => ob
 
 class Dictionary(var language : String):
   type V = (Int, List[(Int, String)])
@@ -42,6 +51,11 @@ class Dictionary(var language : String):
     val new_value   = addValue(w, prev_value)
     map.update(k, new_value)
 
+  /**
+    * Map a word to his frequence and the next words with the probabilities associated
+    *
+    * @param wordList
+    */
   def getFreqnNext(wordList : List[String]) : Unit =
     wordList match
       case Nil => ()
