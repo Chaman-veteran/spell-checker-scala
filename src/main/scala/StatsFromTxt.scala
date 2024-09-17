@@ -25,16 +25,16 @@ def fromOption[B](opt : Option[B], b : B): B = opt match
 def addValue(newWord : String,
             recordedWords : (Int, List[(Int, String)]))
             : (Int, List[(Int, String)]) =
-  val nbSeen = 1 + (recordedWords(1).find((_, word) => word == newWord) match
+  val nbSeen = 1 + (recordedWords._2.find((_, word) => word == newWord) match
                       case None => 0
                       case Some((encountered, _)) => encountered)
   //^^^ nbSeen is the number of occurences of nextWord following the current word
-  (recordedWords(0) + 1, insertDown((nbSeen, newWord), recordedWords(1)))
+  (recordedWords._1 + 1, insertDown((nbSeen, newWord), recordedWords._2))
 
 class Dictionary(var language : String):
   type V = (Int, List[(Int, String)])
   type K = String
-  var map : Map[K, V]= Map.empty
+  var map : Map[K, V] = Map.empty
 
   /** Fetch words from a file */
   def getWords(filePath : Path) : List[String] =
@@ -62,5 +62,13 @@ class Dictionary(var language : String):
       case w :: ws =>
         this.insertWithAddValue(w, fromOption(ws.headOption, ""))
         this.getFreqnNext(ws)
+  
+  /**
+    * Function to get the following words in sorted order
+    *
+    * @return
+    */
+  def getResultingMap() : Map[K, (Int, List[String])] = 
+    map.map((k, v) => (k, (v._1, v._2.take(3).map((_, s) => s))))
 
 end Dictionary
