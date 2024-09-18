@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.json.JsonMapper
 import java.nio.file.{Files, Paths, Path}
 import scala.collection.JavaConverters._
 import scala.collection.mutable.{Map}
+import scala.collection.StringOps
 
 val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
 
@@ -42,8 +43,9 @@ class Dictionary(var language : String):
 
   /** Fetch words from a file */
   def getWords(filePath : Path) : List[String] =
-    val src = Files.readString(filePath)
-    src.split(" ").toList
+    val src : StringOps = Files.readString(filePath)
+    val isSpace = Array(' ', '\n', '\t')
+    src.split(isSpace).toList
 
   /** Assemble all words from different dictionaries */
   def getFiles() : List[String] =
@@ -61,11 +63,10 @@ class Dictionary(var language : String):
     * @param wordList
     */
   def getFreqnNext(wordList : List[String]) : Unit =
-    wordList match
-      case Nil => ()
-      case w :: ws =>
-        this.insertWithAddValue(w, fromOption(ws.headOption, ""))
-        this.getFreqnNext(ws)
+    wordList.sliding(2)
+            .foreach(l =>
+                      this.insertWithAddValue(l.head,
+                                              fromOption(l.tail.headOption, "")))
   
   /**
     * Function to get the following words in sorted order
