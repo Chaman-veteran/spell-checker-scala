@@ -12,7 +12,7 @@ val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: Class
 def insertDown[T](elem : (Int, T), list : List[(Int, T)])
                         : List[(Int, T)] = list match
     case Nil => List(elem)
-    case x :: xs if elem._1 > x._1 => elem :: list
+    case x :: xs if elem._1 > x._1 => elem :: list.filterNot((_, y) => elem._2 == y)
     case x :: xs => x :: insertDown(elem, xs)
 
 def fromOption[B](opt : Option[B], b : B) : B = opt match
