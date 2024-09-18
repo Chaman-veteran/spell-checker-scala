@@ -9,12 +9,12 @@ import scala.collection.mutable.{Map}
 val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
 
 def insertDown[T](elem : (Int, T), list : List[(Int, T)])
-                        : List[(Int, T)] =
-    if (elem(0) > list.head(0)) then list.prepended(elem)
-    else insertDown(elem, list.tail)
-    list
+                        : List[(Int, T)] = list match
+    case Nil => List(elem)
+    case x :: xs if elem._1 > x._1 => elem :: list
+    case x :: xs => x :: insertDown(elem, xs)
 
-def fromOption[B](opt : Option[B], b : B): B = opt match
+def fromOption[B](opt : Option[B], b : B) : B = opt match
   case None => b
   case Some(ob) => ob
 
@@ -93,3 +93,6 @@ class Dictionary(var language : String):
     mapper.writeValue(resultFile, computedMap)
 
 end Dictionary
+
+@main def main() : Unit=
+  Dictionary("en").serializeMap()
