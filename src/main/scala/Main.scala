@@ -4,6 +4,7 @@ import java.nio.file.{Files, Paths}
 import io.StdIn.{readChar}
 
 import Data.WordTree.*
+import SPI.*
 
 /**
   * The user can either ask for completion or correction
