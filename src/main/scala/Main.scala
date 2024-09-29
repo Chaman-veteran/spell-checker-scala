@@ -4,7 +4,7 @@ import java.nio.file.{Files, Paths}
 import io.StdIn.{readChar}
 
 import Data.WordTree.*
-import SPI.*
+import SCI.*
 
 /**
   * The user can either ask for completion or correction
@@ -42,6 +42,6 @@ def getWord() : Query = readChar() match
 @main def main() : Unit =
     val src = Files.readString(Paths.get("SerializedStatistics/result"))
     val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
-    println(keyboardEn)
+    println(keyboardSrcEn)
     // val myMap = mapper.readValue[Map[String, List[String]]](src)
     // print(src)

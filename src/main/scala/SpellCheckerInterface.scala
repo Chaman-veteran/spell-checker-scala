@@ -1,4 +1,4 @@
-package SPI
+package SCI
 
 import Data.WordTree.*
 import java.nio.file.{Files, Paths}
@@ -21,7 +21,7 @@ def nearIndices(i : Int, j : Int) : List[(Int, Int)] =
 
 
 def imap[A, B](l : List[A]) : (((A, Int)) => B) => List[B] =
-  l.zip(0 until l.length).toList.map
+  l.zip(0 until l.length).map
 
 def mapOption[A, B](f : A => Option[B], l : List[A]) : List[B] =
   l.map(f).foldLeft(List())((acc, elt) =>
@@ -38,7 +38,7 @@ class Keyboard(var keyboard : KeyboardT):
   var keyboardWithPerimeter : List[(Char, List[Char])] = nearChars
 
   def getOption(i : (Int, Int)) : Option[Char] =
-    if i._1 < keyboard.length && i._2 < keyboard(i._1).length then
+    if i._1 < keyboard.length && i._1 > 0 && i._2 < keyboard(i._1).length && i._2 > 0 then
       Some(keyboard(i._1)(i._2))
     else
       None
@@ -51,7 +51,7 @@ class Keyboard(var keyboard : KeyboardT):
   def charsPerimeter : List[List[List[Char]]] =
     imap(this.keyboard)
         ((row, indR) =>
-          imap(row)((indT, _) =>
+          imap(row)((_, indT) =>
                       mapOption(this.getOption, nearIndices(indR, indT))
                     ))
   
@@ -89,7 +89,7 @@ end Keyboard
   * QWERTY Keyboard used to get neighboors leters from the on typed 
   */
 val keyboardSrcEn : KeyboardT = ujson.read(Files.readString(Paths.get("layouts/qwerty.json"))).arr.toList
-                         .map(row => row.arr.toList.map(l => l("label")))
+                                     .map(row => row.arr.toList.map(_("label").str.head))
 val keyboardEn : Keyboard = Keyboard(keyboardSrcEn)
 
 /**
@@ -105,7 +105,7 @@ def strDiff(x : String, y : String) : Int = (x, y) match
   case _ =>
     val perimeterOfy : List[Char]= keyboardEn.inPerimeterOf(y.head)
     val tailDiff : Int = strDiff(x.tail, y.tail)
-    val perimeterDiff : Int = tailDiff - (if (perimeterOfy.exists(x.head)) 1 else 0)
+    val perimeterDiff : Int = tailDiff - (if (perimeterOfy.exists(_ == x.head)) 1 else 0)
     2 + min(perimeterDiff, min(strDiff(x.tail, y), strDiff(x, y.tail)))
 
 /**
@@ -118,6 +118,9 @@ def strDiff(x : String, y : String) : Int = (x, y) match
 def completeWord(tree : WordTree, prefixe : String) : List[CountedWord] =
     tree.giveSuffixe(prefixe).sortBy[Int](_.freqNInfo.frequency).take(10)
 
+def associateDistance(word : String, neighbor : CountedWord) : (Int, CountedWord) =
+  (strDiff(word, neighbor.word), neighbor)
+
 /**
   * Correct user's input
   *
@@ -125,4 +128,6 @@ def completeWord(tree : WordTree, prefixe : String) : List[CountedWord] =
   * @param word
   */
 def correctWord(tree : WordTree, word : String) : List[CountedWord] =
-  List() // TODO
+  tree.getSimilarWords(2, word)
+      .map(associateDistance(word, _)).sortBy(_._1)
+      .take(10).map(_._2)
