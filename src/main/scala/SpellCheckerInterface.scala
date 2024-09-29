@@ -1,6 +1,9 @@
 package SPI
 
 import Data.WordTree.*
+import java.nio.file.{Files, Paths}
+import scala.math.{min}
+import upickle.default._
 
 
 /**
@@ -71,19 +74,39 @@ class Keyboard(var keyboard : KeyboardT):
   def nearChars : List[(Char, List[Char])] = 
     this.associateNearChars(this.charsPerimeter)
 
+  /**
+    * Returns the perimeter of a character, as per nearChars's definition of "neighbor"
+    *
+    * @param c
+    */
   def inPerimeterOf(c : Char) : List[Char] =
     keyboardWithPerimeter.find(p => p._1 == c) match
       case None => List()
       case Some(v) => v._2
 end Keyboard
 
-// val keyboardEn : KeyboardT = 
+/**
+  * QWERTY Keyboard used to get neighboors leters from the on typed 
+  */
+val keyboardSrcEn : KeyboardT = ujson.read(Files.readString(Paths.get("layouts/qwerty.json"))).arr.toList
+                         .map(row => row.arr.toList.map(l => l("label")))
+val keyboardEn : Keyboard = Keyboard(keyboardSrcEn)
 
-// def strDiff(x : String, y : String) : Int = (x, y) match
-//   case (_, "") => x.length()
-//   case ("", _) => y.length()
-//   case _ if x.head == y.head => strDiff(x.tail, y.tail)
-//   case _ => 
+/**
+  * Calcul of the distance between two words (modifed Hamming's distance)
+  *
+  * @param x
+  * @param y
+  */
+def strDiff(x : String, y : String) : Int = (x, y) match
+  case (_, "") => x.length()
+  case ("", _) => y.length()
+  case _ if x.head == y.head => strDiff(x.tail, y.tail)
+  case _ =>
+    val perimeterOfy : List[Char]= keyboardEn.inPerimeterOf(y.head)
+    val tailDiff : Int = strDiff(x.tail, y.tail)
+    val perimeterDiff : Int = tailDiff - (if (perimeterOfy.exists(x.head)) 1 else 0)
+    2 + min(perimeterDiff, min(strDiff(x.tail, y), strDiff(x, y.tail)))
 
 /**
   * Complete user's input
@@ -94,3 +117,12 @@ end Keyboard
   */
 def completeWord(tree : WordTree, prefixe : String) : List[CountedWord] =
     tree.giveSuffixe(prefixe).sortBy[Int](_.freqNInfo.frequency).take(10)
+
+/**
+  * Correct user's input
+  *
+  * @param tree
+  * @param word
+  */
+def correctWord(tree : WordTree, word : String) : List[CountedWord] =
+  List() // TODO

@@ -40,7 +40,8 @@ def getWord() : Query = readChar() match
 
 
 @main def main() : Unit =
-    val src = Files.readAllBytes(Paths.get("SerializedStatistics/result")).toString()
+    val src = Files.readString(Paths.get("SerializedStatistics/result"))
     val mapper = JsonMapper.builder().addModule(DefaultScalaModule).build() :: ClassTagExtensions
+    println(keyboardEn)
     // val myMap = mapper.readValue[Map[String, List[String]]](src)
-    print(src)
+    // print(src)
