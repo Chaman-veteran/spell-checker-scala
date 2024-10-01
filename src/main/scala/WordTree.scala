@@ -2,6 +2,7 @@ package Data.WordTree
 
 import collection.mutable.Map
 import scala.reflect.Selectable.reflectiveSelectable
+import com.fasterxml.jackson.module.scala.deser.overrides
 
 
 /** Data linked to a word  */
@@ -17,8 +18,10 @@ var nullProperties = WordProperties(0, List())
   * as output when giving similar words
   */
 class CountedWord(val word : String, val freqNInfo : WordProperties):
-  def tail() =
+  def tail =
     CountedWord(word.tail, freqNInfo)
+  
+  override def toString() : String = this.word
 end CountedWord
 
 /** Words are spelled out on each branches of the tree where
@@ -29,17 +32,20 @@ end CountedWord
   */
 class WordTree(private var properties : WordProperties, branches : Map[Char, WordTree]):
   /** Predicate to know if a word exist in the tree */
-  // def exists(character : String) : Boolean =
-  //   branches.get(character.head) match
-  //     case None => !character.nonEmpty
-  //     case Some(followedUp) => followedUp.exists(character.tail)
-  // Doesn't work
+  def exists(character : String) : Boolean =
+    character match
+      case "" => this.properties.frequency > 0
+      case _ => branches.get(character.head) match
+                  case None => !character.nonEmpty
+                  case Some(followedUp) => followedUp.exists(character.tail)
 
   /** Return the properties of a given word if it exists, the null word otherwise */
   def propertiesOf(character : String) : WordProperties =
-    branches.get(character.head) match
-      case None => if character.nonEmpty then properties else nullProperties
-      case Some(followedUp) => followedUp.propertiesOf(character.tail)
+    character match
+      case "" => properties
+      case _ => branches.get(character.head) match
+                case None => nullProperties
+                case Some(followedUp) => followedUp.propertiesOf(character.tail)
   
   /** Insertion of a word in a tree
     *
@@ -49,7 +55,7 @@ class WordTree(private var properties : WordProperties, branches : Map[Char, Wor
     cword.word.isEmpty() match
       case true => properties = cword.freqNInfo
       case false => (if !branches.contains(cword.word.head) then branches(cword.word.head) = nullTree)
-                    branches(cword.word.head).insert(cword.tail())
+                    branches(cword.word.head).insert(cword.tail)
     this
 
   /** Gives similar words from a suffixe as CountedWord.
