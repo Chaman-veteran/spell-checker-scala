@@ -29,10 +29,11 @@ end CountedWord
   */
 class WordTree(private var properties : WordProperties, branches : Map[Char, WordTree]):
   /** Predicate to know if a word exist in the tree */
-  def exists(character : String) : Boolean =
-    branches.get(character.head) match
-      case None => !character.nonEmpty
-      case Some(followedUp) => followedUp.exists(character.tail)
+  // def exists(character : String) : Boolean =
+  //   branches.get(character.head) match
+  //     case None => !character.nonEmpty
+  //     case Some(followedUp) => followedUp.exists(character.tail)
+  // Doesn't work
 
   /** Return the properties of a given word if it exists, the null word otherwise */
   def propertiesOf(character : String) : WordProperties =
@@ -108,5 +109,5 @@ def tupleToCountedWord =
     CountedWord(key, tupleToWordProperties(wordProperties))).tupled
 
 /** Transform a map of CountedWords in a Tree */
-def mapToTree(m : Map[String, (Int, List[String])]) : WordTree =
+def mapToTree(m : scala.collection.immutable.Map[String, (Int, List[String])]) : WordTree =
   m.foldRight(nullTree)((mapEntry, tree) => tree.insert(tupleToCountedWord(mapEntry)))
